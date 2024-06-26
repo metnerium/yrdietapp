@@ -11,6 +11,28 @@ from typing import List
 router = APIRouter()
 
 
+@router.get("/search", response_model=List[RecipeResponse])
+async def search_recipes(name: str = None, ingredients: str = None, db: AsyncSession = Depends(get_db)):
+    query = select(Recipe)
+    if name:
+        query = query.filter(Recipe.name.ilike(f"%{name}%"))
+    if ingredients:
+        ingredient_list = [ing.strip() for ing in ingredients.split(',')]
+        for ingredient in ingredient_list:
+            query = query.filter(Recipe.ingredients.ilike(f"%{ingredient}%"))
+    result = await db.execute(query)
+    recipes = result.scalars().all()
+    return recipes
+
+
+@router.get("/categories", response_model=List[str])
+async def get_recipe_categories(db: AsyncSession = Depends(get_db)):
+    query = select(Recipe.category).distinct()
+    result = await db.execute(query)
+    categories = result.scalars().all()
+    return categories
+
+
 @router.post("/", response_model=RecipeResponse, status_code=status.HTTP_201_CREATED)
 async def create_recipe(recipe: RecipeCreate, current_user: User = Depends(get_current_user_dependency),
                         db: AsyncSession = Depends(get_db)):
@@ -63,27 +85,4 @@ async def delete_recipe(recipe_id: int, current_user: User = Depends(get_current
 async def list_recipes(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     query = select(Recipe).offset(skip).limit(limit)
     result = await db.execute(query)
-    recipes = result.scalars().all()
-    return recipes
-
-
-@router.get("/categories", response_model=List[str])
-async def get_recipe_categories(db: AsyncSession = Depends(get_db)):
-    query = select(Recipe.category).distinct()
-    result = await db.execute(query)
-    categories = result.scalars().all()
-    return categories
-
-
-@router.get("/search", response_model=List[RecipeResponse])
-async def search_recipes(name: str = None, ingredients: str = None, db: AsyncSession = Depends(get_db)):
-    query = select(Recipe)
-    if name:
-        query = query.filter(Recipe.name.ilike(f"%{name}%"))
-    if ingredients:
-        ingredient_list = [ing.strip() for ing in ingredients.split(',')]
-        for ingredient in ingredient_list:
-            query = query.filter(Recipe.ingredients.ilike(f"%{ingredient}%"))
-    result = await db.execute(query)
-    recipes = result.scalars().all()
-    return recipes
+    recipes = result.scalars()
