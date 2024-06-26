@@ -11,3 +11,4 @@ pytest-asyncio
 httpx
 pandas
 pyjwt
+requests
