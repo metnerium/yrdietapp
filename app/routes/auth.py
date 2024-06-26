@@ -1,17 +1,16 @@
+# app/routes/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 from app.database import get_db
-from app.models.user import User
+from app.models.user import User  # Импортируем модель SQLAlchemy
+from app.schemas.user import UserCreate, UserResponse, UserInDB  # Импортируем схемы Pydantic
 from app.schemas.auth import PhoneNumber, SMSVerification
-from app.schemas.user import UserCreate, UserResponse
 from app.utils.security import create_access_token, get_password_hash, verify_password
 from app.utils.sms import get_auth_code, send_sms
 from app.utils.phone import normalize_phone_number
 
 router = APIRouter()
-
 
 @router.post("/request-sms")
 async def request_sms(phone_data: PhoneNumber, db: AsyncSession = Depends(get_db)):
@@ -53,7 +52,6 @@ async def verify_sms(verification: SMSVerification, db: AsyncSession = Depends(g
 
     return {"message": "Номер телефона подтвержден"}
 
-
 @router.post("/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     normalized_phone = normalize_phone_number(user.phone)
@@ -80,12 +78,14 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
     access_token = create_access_token(data={"sub": db_user.phone})
 
+    # Создаем Pydantic модель из объекта SQLAlchemy
+    user_in_db = UserInDB.model_validate(db_user)
+
     return UserResponse(
-        user=db_user,
+        user=user_in_db,
         access_token=access_token,
         token_type="bearer"
     )
-
 
 @router.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):

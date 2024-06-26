@@ -2,10 +2,19 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-class UserCreate(BaseModel):
-    phone: str = Field(..., example="+79123456789")
+class UserBase(BaseModel):
+    phone: str
+    nickname: str
+    name: Optional[str] = None
+    age: Optional[int] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+    gender: Optional[str] = None
+    activity_level: Optional[str] = None
+    allergies: Optional[str] = None
+
+class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
-    nickname: str = Field(..., min_length=3, max_length=20)
 
 class UserUpdate(BaseModel):
     nickname: Optional[str] = Field(None, min_length=3, max_length=20)
@@ -17,22 +26,13 @@ class UserUpdate(BaseModel):
     activity_level: Optional[str] = None
     allergies: Optional[str] = None
 
-class User(BaseModel):
+class UserInDB(UserBase):
     id: int
-    phone: str
-    nickname: str
-    name: Optional[str] = None
-    age: Optional[int] = None
-    weight: Optional[float] = None
-    height: Optional[float] = None
-    gender: Optional[str] = None
-    activity_level: Optional[str] = None
-    allergies: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserResponse(BaseModel):
-    user: User
+    user: UserInDB
     access_token: str
     token_type: str
