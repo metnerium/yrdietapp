@@ -26,6 +26,7 @@ async def request_sms(phone_data: PhoneNumber, db: AsyncSession = Depends(get_db
     else:
         new_user = User(
             phone=normalized_phone,
+            nickname=f"user_{normalized_phone[-4:]}",  # Временный никнейм
             sms_code=code,
             is_phone_verified=False
         )
@@ -37,7 +38,6 @@ async def request_sms(phone_data: PhoneNumber, db: AsyncSession = Depends(get_db
         return {"message": "SMS успешно отправлено"}
     else:
         raise HTTPException(status_code=500, detail="Не удалось отправить SMS")
-
 
 @router.post("/verify-sms")
 async def verify_sms(verification: SMSVerification, db: AsyncSession = Depends(get_db)):
@@ -68,8 +68,13 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     if db_user.hashed_password:
         raise HTTPException(status_code=400, detail="Пользователь уже зарегистрирован")
 
+    existing_user = await User.get_by_nickname(db, user.nickname)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Этот никнейм уже занят")
+
     hashed_password = get_password_hash(user.password)
     db_user.hashed_password = hashed_password
+    db_user.nickname = user.nickname
     await db.commit()
     await db.refresh(db_user)
 

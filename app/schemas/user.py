@@ -1,3 +1,4 @@
+# app/schemas/user.py
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -8,13 +9,13 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     nickname: Optional[str] = Field(None, min_length=3, max_length=20)
-    name: Optional[str] = Field(None, example="Иван Иванов")
-    age: Optional[int] = Field(None, ge=0, le=120, example=30)
-    weight: Optional[float] = Field(None, gt=0, example=70.5)
-    height: Optional[float] = Field(None, gt=0, example=175.0)
-    gender: Optional[str] = Field(None, example="мужской")
-    activity_level: Optional[str] = Field(None, example="умеренная")
-    allergies: Optional[str] = Field(None, example="лактоза, арахис")
+    name: Optional[str] = None
+    age: Optional[int] = Field(None, ge=0, le=120)
+    weight: Optional[float] = Field(None, gt=0)
+    height: Optional[float] = Field(None, gt=0)
+    gender: Optional[str] = None
+    activity_level: Optional[str] = None
+    allergies: Optional[str] = None
 
 class User(BaseModel):
     id: int
