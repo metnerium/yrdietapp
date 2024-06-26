@@ -1,18 +1,13 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-class PhoneNumber(BaseModel):
-    phone: str = Field(..., example="+79123456789")
-
-class SMSVerification(BaseModel):
-    phone: str = Field(..., example="+79123456789")
-    code: str = Field(..., min_length=4, max_length=6, example="1234")
-
 class UserCreate(BaseModel):
     phone: str = Field(..., example="+79123456789")
     password: str = Field(..., min_length=8)
+    nickname: str = Field(..., min_length=3, max_length=20)
 
 class UserUpdate(BaseModel):
+    nickname: Optional[str] = Field(None, min_length=3, max_length=20)
     name: Optional[str] = Field(None, example="Иван Иванов")
     age: Optional[int] = Field(None, ge=0, le=120, example=30)
     weight: Optional[float] = Field(None, gt=0, example=70.5)
@@ -24,6 +19,7 @@ class UserUpdate(BaseModel):
 class User(BaseModel):
     id: int
     phone: str
+    nickname: str
     name: Optional[str] = None
     age: Optional[int] = None
     weight: Optional[float] = None
@@ -37,9 +33,5 @@ class User(BaseModel):
 
 class UserResponse(BaseModel):
     user: User
-    access_token: str
-    token_type: str
-
-class Token(BaseModel):
     access_token: str
     token_type: str

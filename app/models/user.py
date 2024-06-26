@@ -13,6 +13,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     phone = Column(String, unique=True, index=True)
+    nickname = Column(String, unique=True, index=True)  # New field
     hashed_password = Column(String, nullable=True)
     name = Column(String, nullable=True)
     age = Column(Integer, nullable=True)
@@ -33,7 +34,12 @@ class User(Base):
         result = await db.execute(query)
         return result.scalar_one_or_none()
 
+    @classmethod
+    async def get_by_nickname(cls, db: AsyncSession, nickname: str):
+        query = select(cls).where(cls.nickname == nickname)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
+
     @staticmethod
     def get_current_time():
         return datetime.now(pytz.UTC)
-

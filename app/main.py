@@ -9,10 +9,11 @@ app = FastAPI()
 
 app.include_router(user.router, prefix="/users", tags=["users"])
 app.include_router(auth.router,  tags=["auth"])
-app.include_router(recipes.router, prefix="/app", tags=["app"])
+app.include_router(recipes.router, prefix="/recipes", tags=["recipes"])
 app.include_router(post.router, prefix="/posts", tags=["blog"])
 app.include_router(dailycalory.router, prefix="/app", tags=["app"])
-app.include_router(gpt.router, prefix="/gpt", tags=["gpt"])
+app.include_router(gpt.router, prefix="/gpt", tags=["app"])
+
 @app.on_event("startup")
 async def startup_event():
     await create_tables()
