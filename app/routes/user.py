@@ -1,19 +1,20 @@
+# app/routes/user.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.models.user import User
-from app.schemas.user import UserUpdate, User as UserSchema
+from app.models.user import User  # Импортируем модель SQLAlchemy
+from app.schemas.user import UserUpdate, UserInDB  # Изменено с User на UserInDB
 from app.dependencies import get_current_user_dependency
 
 router = APIRouter()
 
 
-@router.get("/me", response_model=UserSchema)
+@router.get("/me", response_model=UserInDB)  # Изменено с User на UserInDB
 async def read_user_me(current_user: User = Depends(get_current_user_dependency)):
     return current_user
 
 
-@router.patch("/me", response_model=UserSchema)
+@router.patch("/me", response_model=UserInDB)  # Изменено с User на UserInDB
 async def update_user_me(user_update: UserUpdate, current_user: User = Depends(get_current_user_dependency),
                          db: AsyncSession = Depends(get_db)):
     if user_update.nickname and user_update.nickname != current_user.nickname:
