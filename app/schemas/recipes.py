@@ -19,11 +19,22 @@ class RecipeCreate(RecipeBase):
     pass
 
 class RecipeUpdate(RecipeBase):
-    pass
+    name: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    ingredients: Optional[str] = None
+    cost: Optional[float] = None
+    calories: Optional[float] = None
+    protein: Optional[float] = None
+    fat: Optional[float] = None
+    carbohydrates: Optional[float] = None
+    category: Optional[str] = None
+    cooking_time: Optional[int] = None
+    instructions: Optional[str] = None
 
 class RecipeResponse(RecipeBase):
     id: int
     user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

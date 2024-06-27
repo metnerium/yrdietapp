@@ -18,7 +18,7 @@ async def create_recipe(recipe: RecipeCreate, current_user: User = Depends(get_c
     db.add(db_recipe)
     await db.commit()
     await db.refresh(db_recipe)
-    return RecipeResponse.model_validate(db_recipe)
+    return RecipeResponse.model_validate(db_recipe.__dict__)
 
 
 @router.get("/{recipe_id}", response_model=RecipeResponse)
@@ -26,7 +26,7 @@ async def read_recipe(recipe_id: int, db: AsyncSession = Depends(get_db)):
     recipe = await db.get(Recipe, recipe_id)
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
-    return RecipeResponse.model_validate(recipe)
+    return RecipeResponse.model_validate(recipe.__dict__)
 
 
 @router.put("/{recipe_id}", response_model=RecipeResponse)
@@ -44,7 +44,7 @@ async def update_recipe(recipe_id: int, recipe: RecipeUpdate, current_user: User
 
     await db.commit()
     await db.refresh(db_recipe)
-    return RecipeResponse.model_validate(db_recipe)
+    return RecipeResponse.model_validate(db_recipe.__dict__)
 
 
 @router.delete("/{recipe_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -65,7 +65,7 @@ async def list_recipes(skip: int = 0, limit: int = 100, db: AsyncSession = Depen
     query = select(Recipe).offset(skip).limit(limit)
     result = await db.execute(query)
     recipes = result.scalars().all()
-    return [RecipeResponse.model_validate(recipe) for recipe in recipes]
+    return [RecipeResponse.model_validate(recipe.__dict__) for recipe in recipes]
 
 
 @router.get("/search", response_model=List[RecipeResponse])
@@ -87,7 +87,7 @@ async def search_recipes(
 
     result = await db.execute(query)
     recipes = result.scalars().all()
-    return [RecipeResponse.model_validate(recipe) for recipe in recipes]
+    return [RecipeResponse.model_validate(recipe.__dict__) for recipe in recipes]
 
 
 @router.get("/categories", response_model=List[str])
