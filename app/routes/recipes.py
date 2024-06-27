@@ -11,6 +11,36 @@ from typing import List, Optional
 router = APIRouter()
 
 
+@router.get("/search", response_model=List[RecipeResponse])
+async def search_recipes(
+        name: Optional[str] = None,
+        ingredients: Optional[str] = None,
+        category: Optional[str] = None,
+        db: AsyncSession = Depends(get_db)
+):
+    query = select(Recipe)
+    if name:
+        query = query.filter(Recipe.name.ilike(f"%{name}%"))
+    if ingredients:
+        ingredient_list = [ing.strip() for ing in ingredients.split(',')]
+        for ingredient in ingredient_list:
+            query = query.filter(Recipe.ingredients.ilike(f"%{ingredient}%"))
+    if category:
+        query = query.filter(Recipe.category == category)
+
+    result = await db.execute(query)
+    recipes = result.scalars().all()
+    return [RecipeResponse.model_validate(recipe.__dict__) for recipe in recipes]
+
+
+@router.get("/categories", response_model=List[str])
+async def get_recipe_categories(db: AsyncSession = Depends(get_db)):
+    query = select(Recipe.category).distinct()
+    result = await db.execute(query)
+    categories = result.scalars().all()
+    return categories
+
+
 @router.post("/", response_model=RecipeResponse, status_code=status.HTTP_201_CREATED)
 async def create_recipe(recipe: RecipeCreate, current_user: User = Depends(get_current_user_dependency),
                         db: AsyncSession = Depends(get_db)):
@@ -19,6 +49,14 @@ async def create_recipe(recipe: RecipeCreate, current_user: User = Depends(get_c
     await db.commit()
     await db.refresh(db_recipe)
     return RecipeResponse.model_validate(db_recipe.__dict__)
+
+
+@router.get("/", response_model=List[RecipeResponse])
+async def list_recipes(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+    query = select(Recipe).offset(skip).limit(limit)
+    result = await db.execute(query)
+    recipes = result.scalars().all()
+    return [RecipeResponse.model_validate(recipe.__dict__) for recipe in recipes]
 
 
 @router.get("/{recipe_id}", response_model=RecipeResponse)
@@ -58,41 +96,3 @@ async def delete_recipe(recipe_id: int, current_user: User = Depends(get_current
 
     await db.delete(db_recipe)
     await db.commit()
-
-
-@router.get("/", response_model=List[RecipeResponse])
-async def list_recipes(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
-    query = select(Recipe).offset(skip).limit(limit)
-    result = await db.execute(query)
-    recipes = result.scalars().all()
-    return [RecipeResponse.model_validate(recipe.__dict__) for recipe in recipes]
-
-
-@router.get("/search", response_model=List[RecipeResponse])
-async def search_recipes(
-        name: Optional[str] = None,
-        ingredients: Optional[str] = None,
-        category: Optional[str] = None,
-        db: AsyncSession = Depends(get_db)
-):
-    query = select(Recipe)
-    if name:
-        query = query.filter(Recipe.name.ilike(f"%{name}%"))
-    if ingredients:
-        ingredient_list = [ing.strip() for ing in ingredients.split(',')]
-        for ingredient in ingredient_list:
-            query = query.filter(Recipe.ingredients.ilike(f"%{ingredient}%"))
-    if category:
-        query = query.filter(Recipe.category == category)
-
-    result = await db.execute(query)
-    recipes = result.scalars().all()
-    return [RecipeResponse.model_validate(recipe.__dict__) for recipe in recipes]
-
-
-@router.get("/categories", response_model=List[str])
-async def get_recipe_categories(db: AsyncSession = Depends(get_db)):
-    query = select(Recipe.category).distinct()
-    result = await db.execute(query)
-    categories = result.scalars().all()
-    return categories
