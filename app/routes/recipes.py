@@ -85,4 +85,6 @@ async def delete_recipe(recipe_id: int, current_user: User = Depends(get_current
 async def list_recipes(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     query = select(Recipe).offset(skip).limit(limit)
     result = await db.execute(query)
-    recipes = result.scalars()
+    recipes = result.scalars().all()
+    # Convert SQLAlchemy models to Pydantic models
+    return [RecipeResponse.model_validate(recipe) for recipe in recipes]
