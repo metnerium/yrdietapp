@@ -24,4 +24,4 @@ class Recipe(Base):
 
     user = relationship("User", back_populates="recipes")
 
-User.recipes = relationship("Recipe", back_populates="user")
+# User.recipes = relationship("Recipe", back_populates="user")
