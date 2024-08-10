@@ -1,10 +1,9 @@
-# app/routes/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.models.user import User  # Импортируем модель SQLAlchemy
-from app.schemas.user import UserCreate, UserResponse, UserInDB  # Импортируем схемы Pydantic
+from app.models.user import User
+from app.schemas.user import UserCreate, UserResponse, UserInDB
 from app.schemas.auth import PhoneNumber, SMSVerification
 from app.utils.security import create_access_token, get_password_hash, verify_password
 from app.utils.sms import get_auth_code, send_sms
@@ -25,7 +24,7 @@ async def request_sms(phone_data: PhoneNumber, db: AsyncSession = Depends(get_db
     else:
         new_user = User(
             phone=normalized_phone,
-            nickname=f"user_{normalized_phone[-4:]}",  # Временный никнейм
+            nickname=f"user_{normalized_phone[-4:]}",
             sms_code=code,
             is_phone_verified=False
         )
@@ -73,12 +72,13 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     hashed_password = get_password_hash(user.password)
     db_user.hashed_password = hashed_password
     db_user.nickname = user.nickname
+
+    access_token = create_access_token(data={"sub": db_user.phone})
+    db_user.access_token = access_token
+
     await db.commit()
     await db.refresh(db_user)
 
-    access_token = create_access_token(data={"sub": db_user.phone})
-
-    # Создаем Pydantic модель из объекта SQLAlchemy
     user_in_db = UserInDB.model_validate(db_user)
 
     return UserResponse(
@@ -93,5 +93,12 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     user = await User.get_by_phone(db, normalized_phone)
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный номер телефона или пароль")
-    access_token = create_access_token(data={"sub": user.phone})
+
+    if not user.access_token:
+        access_token = create_access_token(data={"sub": user.phone})
+        user.access_token = access_token
+        await db.commit()
+    else:
+        access_token = user.access_token
+
     return {"access_token": access_token, "token_type": "bearer"}

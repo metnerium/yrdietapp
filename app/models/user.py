@@ -1,5 +1,4 @@
-# app/models/user.py
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.future import select
 from app.database import Base
@@ -20,6 +19,7 @@ class User(Base):
     allergies = Column(String, nullable=True)
     sms_code = Column(String, nullable=True)
     is_phone_verified = Column(Boolean, default=False)
+    access_token = Column(Text, nullable=True)  # Новое поле для хранения токена
 
     posts = relationship("Post", back_populates="user")
     recipes = relationship("Recipe", back_populates="user")
@@ -33,5 +33,11 @@ class User(Base):
     @classmethod
     async def get_by_nickname(cls, db, nickname):
         query = select(cls).where(cls.nickname == nickname)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_by_token(cls, db, token):
+        query = select(cls).where(cls.access_token == token)
         result = await db.execute(query)
         return result.scalar_one_or_none()
