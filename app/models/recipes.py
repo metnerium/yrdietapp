@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
-from app.models.user import User
-
 
 class Recipe(Base):
     __tablename__ = "recipes"
@@ -23,5 +21,3 @@ class Recipe(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="recipes")
-
-# User.recipes = relationship("Recipe", back_populates="user")

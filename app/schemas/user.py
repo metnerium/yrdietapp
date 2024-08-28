@@ -1,4 +1,3 @@
-# app/schemas/user.py
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -28,6 +27,7 @@ class UserUpdate(BaseModel):
 
 class UserInDB(UserBase):
     id: int
+    is_blocked: bool
 
     class Config:
         from_attributes = True

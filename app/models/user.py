@@ -19,7 +19,8 @@ class User(Base):
     allergies = Column(String, nullable=True)
     sms_code = Column(String, nullable=True)
     is_phone_verified = Column(Boolean, default=False)
-    access_token = Column(Text, nullable=True)  # Новое поле для хранения токена
+    access_token = Column(Text, nullable=True)
+    is_blocked = Column(Boolean, default=False)
 
     posts = relationship("Post", back_populates="user")
     recipes = relationship("Recipe", back_populates="user")

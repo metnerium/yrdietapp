@@ -35,7 +35,7 @@ class RecipeUpdate(RecipeBase):
 class RecipeResponse(RecipeBase):
     id: int
     user_id: int
-    user_nickname: str  # Added user_nickname field
+    user_nickname: str
 
     class Config:
         from_attributes = True

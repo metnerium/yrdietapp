@@ -18,10 +18,9 @@ class PostUpdate(PostBase):
 class PostResponse(PostBase):
     id: int
     user_id: int
-    user_nickname: str  # Added user_nickname field
+    user_nickname: str
     created_at: datetime
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True  # For Pydantic v1
-        from_attributes = True  # For Pydantic v2
+        from_attributes = True
