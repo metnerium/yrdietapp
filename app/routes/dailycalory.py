@@ -45,11 +45,17 @@ def calculate_daily_calorie_intake(bmr: float, activity_level: str) -> float:
 
 @router.get("/bmi")
 async def get_bmi(current_user: User = Depends(get_current_user_dependency)):
-    bmi = calculate_bmi(current_user.height, current_user.weight)
+    try:
+        bmi = calculate_bmi(current_user.height, current_user.weight)
+    except ValueError:
+        return {"bmi": 0}
     return {"bmi": bmi}
 
 @router.get("/daily-calorie-intake")
 async def get_daily_calorie_intake(current_user: User = Depends(get_current_user_dependency)):
-    bmr = calculate_bmr(current_user.height, current_user.weight, current_user.age, current_user.gender)
-    daily_calorie_intake = calculate_daily_calorie_intake(bmr, current_user.activity_level)
+    try:
+        bmr = calculate_bmr(current_user.height, current_user.weight, current_user.age, current_user.gender)
+        daily_calorie_intake = calculate_daily_calorie_intake(bmr, current_user.activity_level)
+    except ValueError:
+        return {"daily_calorie_intake": 0}
     return {"daily_calorie_intake": daily_calorie_intake}
