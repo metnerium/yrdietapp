@@ -11,6 +11,7 @@ class User(Base):
     nickname = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=True)
     name = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
     age = Column(Integer, nullable=True)
     weight = Column(Float, nullable=True)
     height = Column(Float, nullable=True)
