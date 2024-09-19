@@ -15,6 +15,7 @@ app.include_router(post.router, prefix="/posts", tags=["blog"])
 app.include_router(dailycalory.router, prefix="/app", tags=["app"])
 app.include_router(gpt.router, prefix="/gpt", tags=["app"])
 
+app.include_router(usercontent.router, prefix="/app", tags=["app"])
 admin_router = FastAPI()
 admin_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.mount("/admin", admin_router)
