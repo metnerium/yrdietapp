@@ -22,7 +22,7 @@ async def get_my_recipes(
     query = select(Recipe).filter(Recipe.user_id == current_user.id).offset(skip).limit(limit)
     result = await db.execute(query)
     recipes = result.scalars().all()
-    return [RecipeResponse.model_validate(recipe.__dict__) for recipe in recipes]
+    return [RecipeResponse.model_validate({**recipe.__dict__, 'user_nickname': current_user.nickname}) for recipe in recipes]
 
 @router.get("/my-posts", response_model=List[PostResponse])
 async def get_my_posts(
@@ -34,4 +34,4 @@ async def get_my_posts(
     query = select(Post).filter(Post.user_id == current_user.id).offset(skip).limit(limit)
     result = await db.execute(query)
     posts = result.scalars().all()
-    return [PostResponse.model_validate(post.__dict__) for post in posts]
+    return [PostResponse.model_validate({**post.__dict__, 'user_nickname': current_user.nickname}) for post in posts]
