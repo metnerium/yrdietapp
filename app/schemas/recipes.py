@@ -36,6 +36,7 @@ class RecipeResponse(RecipeBase):
     id: int
     user_id: int
     user_nickname: str
+    user_image_url: Optional[str]
 
     class Config:
         from_attributes = True

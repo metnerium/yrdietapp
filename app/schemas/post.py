@@ -19,6 +19,7 @@ class PostResponse(PostBase):
     id: int
     user_id: int
     user_nickname: str
+    user_image_url: Optional[str]
     created_at: datetime
     updated_at: Optional[datetime] = None
 

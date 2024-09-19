@@ -17,7 +17,7 @@ async def create_post(post: PostCreate, current_user: User = Depends(get_current
     db.add(db_post)
     await db.commit()
     await db.refresh(db_post)
-    return PostResponse(user_nickname=current_user.nickname, **db_post.__dict__)
+    return PostResponse(user_nickname=current_user.nickname, user_image_url=current_user.image_url, **db_post.__dict__)
 
 @router.get("/{post_id}", response_model=PostResponse)
 async def read_post(post_id: int, db: AsyncSession = Depends(get_db)):
@@ -26,7 +26,15 @@ async def read_post(post_id: int, db: AsyncSession = Depends(get_db)):
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    return PostResponse(user_nickname=post.user.nickname, **post.__dict__)
+    return PostResponse(user_nickname=post.user.nickname, user_image_url=post.user.image_url, **post.__dict__)
+
+@router.get("/", response_model=List[PostResponse])
+async def list_posts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+    query = select(Post).options(joinedload(Post.user)).offset(skip).limit(limit)
+    result = await db.execute(query)
+    posts = result.scalars().all()
+    return [PostResponse(user_nickname=post.user.nickname, user_image_url=post.user.image_url, **post.__dict__) for post in posts]
+
 
 @router.put("/{post_id}", response_model=PostResponse)
 async def update_post(post_id: int, post: PostUpdate, current_user: User = Depends(get_current_user_dependency),
@@ -57,9 +65,3 @@ async def delete_post(post_id: int, current_user: User = Depends(get_current_use
     await db.delete(db_post)
     await db.commit()
 
-@router.get("/", response_model=List[PostResponse])
-async def list_posts(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
-    query = select(Post).options(joinedload(Post.user)).offset(skip).limit(limit)
-    result = await db.execute(query)
-    posts = result.scalars().all()
-    return [PostResponse(user_nickname=post.user.nickname, **post.__dict__) for post in posts]
